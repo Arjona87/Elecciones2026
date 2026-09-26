@@ -7,7 +7,7 @@
 <meta name="color-scheme" content="light dark">
 <meta name="description" content="Tablero de preferencia electoral municipal rumbo a las alcaldías 2027, alimentado en vivo desde el Google Sheet del proyecto, con trazabilidad del origen de cada cifra.">
 <!-- Sello de compilación del módulo Elec. El script lo compara con el suyo. -->
-<meta name="Elec-version" content="2026-09-25.S1">
+<meta name="Elec-version" content="2026-09-25.S2">
 <title>Elec · Preferencia electoral municipal — alcaldías 2027</title>
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231D2939'/%3E%3Crect x='7' y='17' width='4' height='9' fill='%23BAFA3D'/%3E%3Crect x='14' y='11' width='4' height='15' fill='%23fff'/%3E%3Crect x='21' y='20' width='4' height='6' fill='%23fff' opacity='.6'/%3E%3C/svg%3E">
@@ -698,7 +698,7 @@ body{background:#fff}
     <p><b>Nota de método:</b> <span id="Elec-pie-me">el margen de error se recalcula con z = 1.96 y p = 0.5 sobre el N declarado</span>; si difiere del declarado, la discrepancia se reporta y no se corrige la cifra de la fuente. La casa encuestadora no publica factores de ponderación ni post-estratificación, por lo que no se supone ninguno.</p>
     <p><b>*</b> Las cifras marcadas con asterisco fueron reconstruidas de las gráficas de tracking, que no incluyen tabla de valores. El error de calibración de cada entidad está documentado en la bitácora AUDITORIA del libro de auditoría.</p>
     <p id="Elec-pie-origen"><b>Origen de los datos:</b> cargando…</p>
-    <p id="Elec-sello-version">Compilación <b>2026-09-25.S1</b></p>
+    <p id="Elec-sello-version">Compilación <b>2026-09-25.S2</b></p>
     <p><b>Derechos:</b> <span id="Elec-pie-derechos">D.R. © Massive Caller S.A. de C.V., 2026</span>, sobre los datos de origen. Reproducción sujeta a referencia al autor. No difundir durante veda electoral.</p>
     <p><b>Elaboración:</b> Consensus Estrategia — Inteligencia de Datos y Análisis Electoral.</p>
   </div>
@@ -1101,7 +1101,7 @@ window.ElecCargarDatos = function (seguir) {
    se fueron en auditar un despliegue que no correspondía a los archivos
    entregados; con el sello, saber qué versión está viva cuesta un vistazo
    al pie de página. */
-var VERSION = "2026-09-25.S1";
+var VERSION = "2026-09-25.S2";
 
 function versionDelHtml() {
   var m = document.querySelector('meta[name="Elec-version"]');
@@ -1690,8 +1690,16 @@ function aplicarDefaults() {
    de categorías y las etiquetas de municipio saldrían como "0%", "1%".
    Cada gráfica declara sus ejes completos con los ayudantes de abajo. */
 function opciones(extra) {
+  /* Eje de interacción según la orientación de la gráfica.
+     En una barra horizontal (indexAxis "y") la escala de categorías es la Y,
+     de modo que la detección del cursor tiene que correr sobre ese eje.
+     Chart.js asume axis "x" cuando se omite: por eso el resaltado y el
+     tooltip cambiaban de barra al moverse en horizontal en lugar de en
+     vertical. El tooltip hereda estas opciones, así que no hay que fijarlo
+     aparte. */
+  var ejeCursor = (extra && extra.indexAxis === "y") ? "y" : "x";
   var base = {
-    interaction: { mode: "index", intersect: false },
+    interaction: { mode: "index", axis: ejeCursor, intersect: false },
     plugins: { legend: { display: true } }
   };
   return fusion(base, extra);
